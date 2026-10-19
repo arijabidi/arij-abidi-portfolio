@@ -2,16 +2,21 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-export function DnaBackground({
-  accentColor = '#c8ff00',
-  alignRight = false,
-}: {
+interface DnaBackgroundProps {
   type?: string;
   accentColor?: string;
   isAbsolute?: boolean;
   widthPercent?: number;
   alignRight?: boolean;
-}) {
+}
+
+export function DnaBackground({
+  type = 'dna',
+  accentColor = '#c8ff00',
+  isAbsolute = true,
+  widthPercent = 100,
+  alignRight = false,
+}: DnaBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,8 +38,7 @@ export function DnaBackground({
       antialias: true,
     });
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.appendChild(renderer.domElement);
 
     const count = 320;
@@ -65,62 +69,62 @@ export function DnaBackground({
     const points = new THREE.Points(geometry, material);
     scene.add(points);
 
-    if (alignRight && window.innerWidth > 850) {
-      points.position.x = 5.2;
-    }
+    const resize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
 
-    let animId: number;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+
+      points.position.x =
+        alignRight && width > 850 ? 5.2 : 0;
+    };
+
+    resize();
+
+    let animId = 0;
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
+
       points.rotation.y += 0.006;
       points.rotation.x += 0.002;
+
       renderer.render(scene, camera);
     };
 
     animate();
 
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-
-      renderer.setSize(window.innerWidth, window.innerHeight);
-
-      if (alignRight && window.innerWidth > 850) {
-        points.position.x = 5.2;
-      } else {
-        points.position.x = 0;
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', resize);
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', resize);
 
-      scene.remove(points);
-      renderer.dispose();
       geometry.dispose();
       material.dispose();
+      renderer.dispose();
 
-      if (container.contains(renderer.domElement)) {
+      if (renderer.domElement.parentElement === container) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [accentColor, alignRight]);
+  }, [accentColor, alignRight, type]);
 
   return (
     <div
       ref={containerRef}
+      aria-hidden="true"
       style={{
-        position: 'fixed',
+        position: isAbsolute ? 'absolute' : 'fixed',
         top: 0,
         left: 0,
-        width: '100%',
+        width: `${Math.min(100, Math.max(0, widthPercent))}%`,
         height: '100vh',
         pointerEvents: 'none',
         zIndex: 0,
+        overflow: 'hidden',
       }}
     />
   );
