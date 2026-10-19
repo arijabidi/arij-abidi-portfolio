@@ -72,7 +72,7 @@ export interface CustomSection {
 export const portfolioData = {
   backgroundAnimation: "neural",
   colorPalette: "cyber-blue",
-  customAccentColor: "",
+  customAccentColor: "#5BB8FF",
 
   personal: {
     name: "Arij Abidi",
