@@ -72,7 +72,7 @@ export interface CustomSection {
 export const portfolioData = {
   backgroundAnimation: "neural",
   colorPalette: "cyber-blue",
-  customAccentColor: "#5BB8FF",
+  customAccentColor: "#1A6FC9",
 
   personal: {
     name: "Arij Abidi",
@@ -162,7 +162,7 @@ export const portfolioData = {
       num: "01",
       name: "Cloud & DevOps Engineering",
       desc: "Experienced in Cloud infrastructure, DevOps automation, CI/CD pipelines, Docker, Kubernetes, Ansible, AWS, Azure, OpenStack, monitoring with Prometheus and Grafana, and infrastructure security through DevSecOps best practices.",
-      type: "neural",
+      type: "network",
     },
   ] as ExpertiseItem[],
 
