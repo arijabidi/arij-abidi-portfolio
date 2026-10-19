@@ -40,53 +40,42 @@ export function TileCanvas({
     };
 
     const render = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      if (width > 0 && height > 0) {
-        const cx = width / 2;
-        const cy = height / 2;
-        const radius = Math.min(cx, cy) * 0.38;
-
-        const accent =
-          getComputedStyle(document.documentElement)
-            .getPropertyValue('--lime')
-            .trim() || '#00d4ff';
-
-        ctx.strokeStyle = accent;
-        ctx.globalAlpha = 0.75;
-        ctx.lineWidth = 1.5;
-
-        ctx.beginPath();
-        ctx.arc(
-          cx,
-          cy,
-          radius,
-          angle,
-          angle + Math.PI * 1.4
-        );
-        ctx.stroke();
-
-        ctx.globalAlpha = 1;
-        angle += 0.02;
+      if (!width || !height) {
+        resizeCanvas();
       }
 
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = Math.min(cx, cy) * 0.38;
+
+      ctx.strokeStyle = 'rgba(200, 255, 0, 0.45)';
+      ctx.lineWidth = 1.5;
+
+      // Keep the existing circular animation.
+      ctx.beginPath();
+      ctx.arc(
+        cx,
+        cy,
+        radius,
+        angle,
+        angle + Math.PI * 1.4
+      );
+      ctx.stroke();
+
+      angle += 0.02;
       animId = requestAnimationFrame(render);
     };
 
     resizeCanvas();
-
-    const observer = new ResizeObserver(() => {
-      resizeCanvas();
-    });
-
-    observer.observe(canvas);
-
     render();
+
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
       cancelAnimationFrame(animId);
-      observer.disconnect();
-      ctx.clearRect(0, 0, width, height);
+      window.removeEventListener('resize', resizeCanvas);
     };
   }, [id, type]);
 
