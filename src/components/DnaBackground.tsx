@@ -1,8 +1,10 @@
+
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 export function DnaBackground({
   accentColor = '#c8ff00',
+  alignRight = false,
 }: {
   type?: string;
   accentColor?: string;
@@ -17,10 +19,20 @@ export function DnaBackground({
     if (!container) return;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
     camera.position.z = 28;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+    });
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
@@ -32,12 +44,17 @@ export function DnaBackground({
     for (let i = 0; i < count; i++) {
       const t = (i / count) * Math.PI * 8;
       const strand = i % 2 === 0 ? 1 : -1;
+
       positions[i * 3] = Math.cos(t) * 6 * strand;
       positions[i * 3 + 1] = (i / count) * 44 - 22;
       positions[i * 3 + 2] = Math.sin(t) * 6 * strand;
     }
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(positions, 3)
+    );
+
     const material = new THREE.PointsMaterial({
       color: new THREE.Color(accentColor),
       size: 0.35,
@@ -47,23 +64,28 @@ export function DnaBackground({
 
     const points = new THREE.Points(geometry, material);
     scene.add(points);
+
     if (alignRight && window.innerWidth > 850) {
       points.position.x = 5.2;
     }
 
     let animId: number;
+
     const animate = () => {
       animId = requestAnimationFrame(animate);
       points.rotation.y += 0.006;
       points.rotation.x += 0.002;
       renderer.render(scene, camera);
     };
+
     animate();
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
+
       renderer.setSize(window.innerWidth, window.innerHeight);
+
       if (alignRight && window.innerWidth > 850) {
         points.position.x = 5.2;
       } else {
@@ -76,10 +98,15 @@ export function DnaBackground({
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
+
+      scene.remove(points);
       renderer.dispose();
       geometry.dispose();
       material.dispose();
-      container.innerHTML = '';
+
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
     };
   }, [accentColor, alignRight]);
 
